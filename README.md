@@ -1,5 +1,5 @@
-# Python-todo-list
-A todo list made with Python, Flask and PostgreSQL
+# Python-coffee-order
+A coffee ordering app made with Python, Flask and PostgreSQL
 
 ## .env file
 
@@ -30,5 +30,6 @@ on lines 17-19
 `pip3 install -r requirements.txt`
 
 ## Running the app
+`. venv/bin/activate`
 
 `./bin/server-debug.sh`
