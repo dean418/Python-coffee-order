@@ -22,7 +22,7 @@ class Database:
         return Table('orders', self.metadata,
         Column('name', String),
         Column('coffee_name', String),
-        Column('options', ARRAY(String), default=['']))
+        Column('options', ARRAY(String), nullable = True))
 
     def insert(self, name, coffee_name, options):
         insert_statement = self.order_table.insert(None).values(name=name, coffee_name=coffee_name, options=options)
@@ -65,10 +65,13 @@ def add_to_order():
         if not request.form[item]:
             return render_template('index.html', err='please fill in form')
 
-    print(request.form)
-
     options = []
-    options.append(request.form['option'])
+
+    if 'decaf' in request.form:
+        options.append('decaf')
+
+    if 'extra_shot' in request.form:
+        options.append('extra_shot')
 
     postgres.insert(request.form['name'], request.form['coffee'], options)
     postgres.get_all()
