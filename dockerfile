@@ -14,9 +14,9 @@ RUN pip3 install psycopg2
 USER postgres
 
 # set a password for the database
-ENV POSTGRES_PASSWORD=
-ENV POSTGRES_DB=
-ENV POSTGRES_USER=
+ENV POSTGRES_PASSWORD=mysecretpassword
+ENV POSTGRES_DB=postgres_db
+ENV POSTGRES_USER=postgres
 
 # expose Postgres port
 EXPOSE 5432

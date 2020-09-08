@@ -4,55 +4,56 @@ import psycopg2
 from sqlalchemy import create_engine
 from sqlalchemy import Table, Column, String, ARRAY, MetaData
 from dotenv import load_dotenv
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 
 load_dotenv()
 app = Flask(__name__) # first param tells flask whats part of our app
 
-db_string = f"postgres://{os.environ.get('PSQL_USER')}:{os.environ.get('PSQL_PASSWORD')}@127.0.0.1:5432"
+class Database:
+    def __init__(self):
+        db_string = f"postgres://{os.environ.get('PSQL_USER')}:{os.environ.get('PSQL_PASSWORD')}@127.0.0.1:5432"
+        self.engine = create_engine(db_string)
+        self.metadata = MetaData(self.engine)
+        self.con = self.engine.connect()
+        self.order_table = self.create_schema()
 
-engine = create_engine(db_string)
-metadata = MetaData(engine)
+        # self.create_table()
+    def create_schema(self):
+        return Table('orders', self.metadata,
+        Column('name', String),
+        Column('coffee_name', String),
+        Column('options', ARRAY(String), default=['']))
 
-order_table = Table('orders', metadata,
-    Column('name', String),
-    Column('coffee_name', String),
-    Column('options', ARRAY(String)))
+    def insert(self, name, coffee_name, options):
+        insert_statement = self.order_table.insert(None).values(name=name, coffee_name=coffee_name, options=options)
+        self.con.execute(insert_statement)
+        return
 
-con = engine.connect()
+    def create_table(self):
+        self.order_table.create()
+        return
 
-# Create table
-    # order_table.create()
+    def get_all(self):
+        select_statement = self.order_table.select()
+        result_set = self.con.execute(select_statement)
 
-# Basic insert
-    # insert_statement = order_table.insert().values(name='Dean', coffee_name='latte', options=['extra shot', 'decaf'])
-    # con.execute(insert_statement)
+        for r in result_set:
+            print(r)
+        return
 
-# Get all orders
-select_statement = order_table.select()
-result_set = con.execute(select_statement)
+    def delete(self):
+        delete_statement = self.order_table.delete(None)
+        self.con.execute(delete_statement)
+        return
 
-for r in result_set:
-    print(r)
+    def drop(self):
+        self.order_table.drop()
+        return
 
-# Basic delete
-    # delete_statement = order_table.delete()
-    # con.execute(delete_statement)
-
-# -------- old connection --------
-# try:
-#     connection = psycopg2.connect(
-#         user= os.environ.get('PSQL_USER'),
-#         password=os.environ.get('PSQL_PASSWORD'),
-#         host=os.environ.get('PSQL_HOST'),
-#         port=os.environ.get('PSQL_PORT'),
-#         database=os.environ.get('PSQL_DATABASE'))
-#     print(connection)
-#     cursor = connection.cursor()
-
-# except (Exception, psycopg2.Error) as error:
-#     print ('Error while connecting to PostgreSQL', error)
-#     exit()
+postgres = Database()
+# postgres.drop()
+postgres.delete()
+postgres.get_all()
 
 @app.route('/')
 def index():
@@ -60,4 +61,16 @@ def index():
 
 @app.route('/add-to-order', methods=['POST'])
 def add_to_order():
-    name = request.form['name']
+    for item in request.form:
+        if not request.form[item]:
+            return render_template('index.html', err='please fill in form')
+
+    print(request.form)
+
+    options = []
+    options.append(request.form['option'])
+
+    postgres.insert(request.form['name'], request.form['coffee'], options)
+    postgres.get_all()
+
+    return redirect('/')
