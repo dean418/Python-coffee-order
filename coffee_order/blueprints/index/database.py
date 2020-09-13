@@ -1,6 +1,6 @@
 import os
 import psycopg2
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select
 from sqlalchemy import Table, Column, String, ARRAY, MetaData
 
 class Database:
@@ -31,6 +31,10 @@ class Database:
         for doc in documents:
             print(doc)
         return
+
+    def get_customer_order(self, name):
+        select_statement = select([self.table]).where(self.table.columns.customer_name == name)
+        return self.con.execute(select_statement).fetchall()
 
     def delete(self):
         delete_statement = self.table.delete(None)
