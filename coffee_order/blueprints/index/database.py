@@ -8,36 +8,35 @@ class Database:
         self.engine = create_engine(os.environ.get('PSQL_URL'))
         self.metadata = MetaData(self.engine)
         self.con = self.engine.connect()
-        self.order_table = self.create_schema()
+        self.table = self.create_schema()
+        self.create_table()
 
     def create_schema(self):
-        return Table('orders', self.metadata,
-        Column('name', String),
-        Column('coffee_name', String),
-        Column('options', ARRAY(String), nullable = True))
+        pass
 
-    def insert(self, name, coffee_name, options):
-        insert_statement = self.order_table.insert(None).values(name=name, coffee_name=coffee_name, options=options)
+    def create_table(self):
+        if not self.engine.dialect.has_table(self.engine, self.table):
+            self.table.create()
+        return
+
+    def insert(self, data):
+        insert_statement = self.table.insert(None).values(**data)#name=name, coffee_name=coffee_name, options=options
         self.con.execute(insert_statement)
         return
 
-    def create_table(self):
-        self.order_table.create()
-        return
-
     def get_all(self):
-        select_statement = self.order_table.select()
-        result_set = self.con.execute(select_statement)
+        select_statement = self.table.select()
+        documents = self.con.execute(select_statement)
 
-        for r in result_set:
-            print(r)
+        for doc in documents:
+            print(doc)
         return
 
     def delete(self):
-        delete_statement = self.order_table.delete(None)
+        delete_statement = self.table.delete(None)
         self.con.execute(delete_statement)
         return
 
     def drop(self):
-        self.order_table.drop()
+        self.table.drop()
         return

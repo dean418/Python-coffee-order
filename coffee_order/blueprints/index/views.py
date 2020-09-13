@@ -1,8 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request
 
-from .database import Database
-
-postgres = Database()
+from .orders import Order
+order=Order()
 
 index = Blueprint('index', __name__, template_folder='templates')
 
@@ -16,18 +15,19 @@ def add_to_order():
         if not request.form[item]:
             return render_template('index.html', err='please fill in form')
 
-    options = []
+    new_order={
+        'customer_name': request.form['name'],
+        'drink_name': request.form['coffee'],
+        'options': []
+    }
 
     if 'decaf' in request.form:
-        options.append('decaf')
+        new_order['options'].append('decaf')
 
     if 'extra_shot' in request.form:
-        options.append('extra_shot')
+        new_order['options'].append('extra_shot')
 
-    postgres.insert(request.form['name'], request.form['coffee'], options)
-
-    print('--------')
-    postgres.get_all()
-    print('--------')
+    order.insert(new_order)
+    order.get_all()
 
     return redirect('/')
