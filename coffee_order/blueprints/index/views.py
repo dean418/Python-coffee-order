@@ -12,7 +12,7 @@ def get_index():
 
 @index.route('/customer/<name>')
 def show_orders(name):
-    orders = order.get_customer_order('dean')
+    orders = order.get_customer_order(name)
     return render_template('index.html', orders=orders)
 
 
@@ -20,7 +20,7 @@ def show_orders(name):
 def add_to_order():
     for item in request.form:
         if not request.form[item]:
-            return render_template('index.html', err='please fill in form')
+            return render_template('index.html', err='Please fill in all fields')
 
     new_order = {
         'customer_name': request.form['name'],

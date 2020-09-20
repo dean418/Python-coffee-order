@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy import Table, Column, String, Integer, ARRAY, MetaData
 
-from .database import Database
+from ..database import Database
 
 class Order(Database):
     def __init__(self):
